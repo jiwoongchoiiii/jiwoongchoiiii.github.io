@@ -47,6 +47,23 @@
   zoom();
   addEventListener('resize', zoom);
 
+  // 홈 하단 문구(ILLUSTRATION · …): ILLUSTRATOR와의 간격을 위쪽 메일 주소 ↔ JIWOONG CHOI 간격과 같게 (하단 아이콘과는 겹치지 않게)
+  var svcDy = 0;
+  function alignSvc() {
+    var home = document.getElementById('home'); if (!home || !home.offsetHeight) return;
+    var mail = home.querySelector('.pf-mail'), name = home.querySelector('h1'), svc = home.querySelector('.pf-svc'), dock = document.querySelector('.pf-dock');
+    var role = null; Array.prototype.forEach.call(home.children, function (e) { if (!role && /ILLUSTRATOR/.test(e.textContent) && e !== name) role = e; });
+    if (!mail || !name || !svc || !role) return;
+    var k = home.getBoundingClientRect().width / home.offsetWidth || 1;   // 화면 px ÷ 디자인 px
+    var m = mail.getBoundingClientRect(), n = name.getBoundingClientRect(), r = role.getBoundingClientRect(), s = svc.getBoundingClientRect();
+    var y = window.scrollY || 0;                                         // 페이지 기준 좌표로 계산 (스크롤해도 값이 같게)
+    var want = r.bottom + y + (n.top - m.bottom);
+    if (dock && dock.offsetHeight) want = Math.min(want, dock.getBoundingClientRect().top - 12 - s.height);   // 맨 위에서 볼 때 하단 아이콘 위
+    var dy = svcDy + (want - (s.top + y)) / k;
+    if (Math.abs(dy - svcDy) > 0.5) { svcDy = dy; d.style.setProperty('--pf-svcdy', dy.toFixed(1) + 'px'); }
+  }
+  setInterval(alignSvc, 400); addEventListener('resize', function () { requestAnimationFrame(alignSvc); });
+
   // 우클릭 막기 (이미지 저장 방지)
   addEventListener('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); }, true);
   // 이미지·영상을 끌어서 저장하는 것도 막기
