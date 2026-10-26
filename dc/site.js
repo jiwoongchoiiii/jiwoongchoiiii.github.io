@@ -1,0 +1,79 @@
+/* 사이트 전체 공통 (모든 페이지에 포함, 컴포넌트보다 먼저 실행) */
+(function () {
+  var d = document.documentElement;
+
+  // 화면 맞춤 배율 (모든 기기에서 1440px 디자인이 잘리지 않게)
+  //  --pf-s : 사이트 전체 배율. 창이 1440px보다 좁으면 창 폭에 맞춰 축소 (컴퓨터·아이패드·휴대폰 공통)
+  //  T (window.__pfMix) : 화면 비율(세로/가로)로 정하는 섞는 정도. 1.0 이하 = 0(컴퓨터 배치), 1.9 이상 = 1(휴대폰 배치),
+  //                       그 사이는 연속으로 섞음 (아이패드 세로 ≈ 0.5). 창 크기를 바꾸는 내내 끊김 없이 변함
+  //  --pf-zh / --pf-zw : 홈 / Works 추가 확대 배율. 화면에 보이는 디자인 폭을 섞어서 정함
+  //    · 홈: 컴퓨터 = 화면 전체(큰 화면은 창 폭 1670px을 1배로 확대) ↔ 휴대폰 = 967px 폭이 화면을 채움
+  //    · Works: 컴퓨터 = 1440px ↔ 휴대폰 = 650px 폭 (Featured 박스가 화면 폭의 약 80%)
+  //  --pf-za : About 확대 배율. About은 두 칸 ↔ 한 줄 배치가 달라 T가 0.4 이상(아이패드 세로부터)이면 한 줄 배치(html.pf-phone, 640px 폭)
+  //  --pf-u : 전구·EN/KR·하단 아이콘 배율 (작은 화면에서도 누르기 좋은 크기 유지)
+  var HW = 967, AW = 640, WW = 650;
+  function mix(a, b, t) { return a + (b - a) * t; }
+  function zoom() {
+    var w = window.innerWidth || 1440, h = window.innerHeight || 900;
+    var s = Math.min(1, w / 1440), rootW = w / s;               // rootW: 사이트 전체 축소 뒤 화면 폭(디자인 단위, 1440 이상)
+    var t = Math.max(0, Math.min(1, (h / w - 1.0) / 0.9));
+    var zd = s === 1 ? Math.max(1, w / 1670) : 1;              // 컴퓨터 배치의 홈·About 확대
+    var hw = mix(rootW / zd, HW, t), zh = rootW / hw;          // 홈: 화면에 보이는 디자인 폭
+    var phone = t >= 0.4, za = phone ? rootW / AW : zd;        // About
+    var ww = mix(1440, WW, t), zw = 1440 / ww;                 // Works: 디자인 폭
+    var rowW = Math.max(ww, rootW / zw), wl = mix(120, 16, t);  // Works 가로 선반: 화면 끝까지, 첫 박스는 왼쪽 여백 wl부터
+    // 컴퓨터: 창 폭이 모니터 폭의 절반이 될 때까지는 위아래 글자·아이콘이 풀스크린 때 크기 그대로 (그보다 좁으면 비례해서 작아짐)
+    var sw = Math.max(w, (window.screen && screen.width) || w), keep = Math.min(1, w / (sw / 2));
+    var zfull = Math.max(1, sw / 1670);                        // 풀스크린일 때 홈·About 확대 배율
+    var tkd = zfull * keep / (s * zh), tkad = zfull * keep / (s * za);
+    var tk = mix(tkd, 1.5, t), tka = phone ? 1.05 : tkad;      // 휴대폰: 위아래 작은 글자는 예전의 3/4 크기
+    var u = mix(Math.max(keep, 0.6), Math.min(0.9, w / 430), t) / s;
+    window.__pfS = s; window.__pfMix = t; window.__pfZh = zh; window.__pfHw = hw; window.__pfWw = ww;
+    d.classList.toggle('pf-phone', phone);
+    var set = function (k, v) { d.style.setProperty(k, v); };
+    set('--pf-s', s.toFixed(5)); set('--pf-u', u.toFixed(5));
+    set('--pf-rootw', rootW.toFixed(2) + 'px');
+    set('--pf-zh', zh.toFixed(5)); set('--pf-za', za.toFixed(5)); set('--pf-zw', zw.toFixed(5));
+    set('--pf-ww', ww.toFixed(2) + 'px'); set('--pf-wl', wl.toFixed(2) + 'px');
+    set('--pf-rowl', Math.min(0, (ww - rowW) / 2).toFixed(2) + 'px'); set('--pf-roww', rowW.toFixed(2) + 'px');
+    set('--pf-wpad', (wl + Math.max(0, (rowW - ww) / 2)).toFixed(2) + 'px');
+    // 홈·About 위아래 작은 글자 크기(tk, tka)와 SEOUL·메일 위치 (메일은 SEOUL 바로 아래, 글자 크기에 맞춰)
+    var loct = mix(40, 122, t), aloct = phone ? 82 : 40;      // 휴대폰: 전구에 닿지 않을 만큼만 위로
+    set('--pf-tk', tk.toFixed(4)); set('--pf-tka', tka.toFixed(4));
+    set('--pf-loct', loct.toFixed(1) + 'px'); set('--pf-mailt', (loct + 22 * tk).toFixed(1) + 'px');
+    set('--pf-aloct', aloct + 'px'); set('--pf-amailt', (aloct + 22 * tka).toFixed(1) + 'px');
+    set('--pf-bulbr', mix(152, 128, t).toFixed(1) + 'px');
+  }
+  zoom();
+  addEventListener('resize', zoom);
+
+  // 우클릭 막기 (이미지 저장 방지)
+  addEventListener('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); }, true);
+  // 이미지·영상을 끌어서 저장하는 것도 막기
+  addEventListener('dragstart', function (e) {
+    var t = e.target;
+    if (t && (t.tagName === 'IMG' || t.tagName === 'VIDEO')) e.preventDefault();
+  }, true);
+
+  // 메일 주소 글자를 누르면 메일 앱 대신 주소를 복사 (About의 메일 버튼 .pf-mailbtn은 메일 앱을 엶)
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text).catch(function () { fallback(text); });
+    fallback(text);
+  }
+  function fallback(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (err) {}
+    ta.remove();
+  }
+  addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href^="mailto:"]') : null;
+    if (!a || a.classList.contains('pf-mailbtn')) return;
+    e.preventDefault();
+    copy(a.getAttribute('href').replace(/^mailto:/, '').split('?')[0]);
+    // 복사됐다는 표시로 살짝 깜빡임
+    if (a.animate) a.animate([{ opacity: 1 }, { opacity: .25 }, { opacity: 1 }], { duration: 450, easing: 'ease' });
+  }, true);
+})();
