@@ -39,11 +39,20 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html.pf-phone #about { height: var(--pf-ah, 2160px) !important; }
 /* SEOUL·메일 → 소개(ABOUT·로고·소개글) → 요정 애니메이션 → (첫 화면 끝) → 경력·학력·툴(+CV 버튼) → 클로징 문구 → 그 아래 가운데 메일 버튼
    경력 칸·클로징 위치와 About 높이는 site.js alignAbout이 첫 화면 높이와 경력 칸 높이로 계산 */
-/* 메일 → ABOUT 여백 = 소개글 → 요정 여백 (둘 다 디자인 90px). 요정은 아이폰에서 아이콘과 겹치지 않던 자리 그대로, ABOUT~소개글만 내림 */
-html.pf-phone #about .pf-aboutcol { top: 252px !important; }
-html.pf-phone #about .pf-ch[data-ch="piano"]  { top: 656px !important; left: 485px !important; }
-html.pf-phone #about .pf-ch[data-ch="dance1"] { top: 673px !important; left: 737px !important; }
-html.pf-phone #about .pf-ch[data-ch="dance2"] { top: 657px !important; left: 845px !important; }
+/* 메일 → ABOUT 여백 = 소개글 → 요정 여백 (둘 다 디자인 108px = 90 + ABOUT 글자 높이 18)
+   요정은 1.2배: 세 요정 가운데(가로 720)·맨 위(693)를 기준으로 함께 키움 (위치도 1.2배로 벌림) */
+html.pf-phone #about .pf-aboutcol { top: 270px !important; }
+html.pf-phone #about .pf-ch { scale: 1.2; transform-origin: 0 0; }
+html.pf-phone #about .pf-ch[data-ch="piano"]  { top: 693px !important; left: 438px !important; }
+html.pf-phone #about .pf-ch[data-ch="dance1"] { top: 713px !important; left: 740px !important; }
+html.pf-phone #about .pf-ch[data-ch="dance2"] { top: 694px !important; left: 870px !important; }
+/* 화면이 짧은 휴대폰(아이폰 SE 등, 보이는 높이 600px 미만): 요정이 아이콘과 겹치지 않게 원래 크기·자리 */
+@media (max-height: 600px) {
+  html.pf-phone #about .pf-ch { scale: 1; }
+  html.pf-phone #about .pf-ch[data-ch="piano"]  { top: 656px !important; left: 485px !important; }
+  html.pf-phone #about .pf-ch[data-ch="dance1"] { top: 673px !important; left: 737px !important; }
+  html.pf-phone #about .pf-ch[data-ch="dance2"] { top: 657px !important; left: 845px !important; }
+}
 html.pf-phone #about .pf-exp { left: 440px !important; top: var(--pf-aexpt, 908px) !important; }
 html.pf-phone #about .pf-closing { left: 440px !important; top: var(--pf-aclt, 1708px) !important; align-items: center !important; }
 /* 휴대폰 경력·학력: 글자 2배 (컴퓨터 14/12/13px → 28/24/26px) */
@@ -51,6 +60,11 @@ html.pf-phone #about .pf-exp .pf-xt { font-size: 28px !important; }
 html.pf-phone #about .pf-exp .pf-xs { font-size: 24px !important; margin-top: 3px !important; }
 html.pf-phone #about .pf-exp .pf-eh { font-size: 26px !important; }
 html.pf-phone #about .pf-exp .pf-x:not(.pf-eh) { padding: 14px 0 !important; }
+/* 컴퓨터(마우스): 클로징 문구 줄마다 마우스를 올리면 그 줄만 연두빛 */
+@media (hover: hover) {
+  .pf-cltxt .pf-gl:hover { color: #cdf37d !important; text-shadow: 0 0 18px rgba(205,243,125,.55), 0 0 42px rgba(205,243,125,.25); }
+  html.pf-light .pf-cltxt .pf-gl:hover { text-shadow: none; }
+}
 /* 휴대폰: 터치한 클로징 문구 줄만 연두빛 (site.js) */
 .pf-cltxt .pf-gl.pf-lit { color: #cdf37d !important; text-shadow: 0 0 18px rgba(205,243,125,.55), 0 0 42px rgba(205,243,125,.25); }
 html.pf-light .pf-cltxt .pf-gl.pf-lit { text-shadow: none; }
