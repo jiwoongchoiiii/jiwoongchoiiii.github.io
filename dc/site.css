@@ -39,11 +39,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html.pf-phone #about { height: var(--pf-ah, 2160px) !important; }
 /* SEOUL·메일 → 소개(ABOUT·로고·소개글) → 요정 애니메이션 → (첫 화면 끝) → 경력·학력·툴(+CV 버튼) → 클로징 문구 → 그 아래 가운데 메일 버튼
    경력 칸·클로징 위치와 About 높이는 site.js alignAbout이 첫 화면 높이와 경력 칸 높이로 계산 */
-/* ABOUT ~ 요정 덩어리는 --pf-ashift만큼 내려 위 메일과 아래 아이콘 사이 정중앙에 (site.js alignAbout) */
-html.pf-phone #about .pf-aboutcol { top: calc(198px + var(--pf-ashift, 0px)) !important; }
-html.pf-phone #about .pf-ch[data-ch="piano"]  { top: calc(656px + var(--pf-ashift, 0px)) !important; left: 485px !important; }
-html.pf-phone #about .pf-ch[data-ch="dance1"] { top: calc(673px + var(--pf-ashift, 0px)) !important; left: 737px !important; }
-html.pf-phone #about .pf-ch[data-ch="dance2"] { top: calc(657px + var(--pf-ashift, 0px)) !important; left: 845px !important; }
+/* 메일 → ABOUT 여백 = 소개글 → 요정 여백 (둘 다 디자인 90px). 요정은 아이폰에서 아이콘과 겹치지 않던 자리 그대로, ABOUT~소개글만 내림 */
+html.pf-phone #about .pf-aboutcol { top: 252px !important; }
+html.pf-phone #about .pf-ch[data-ch="piano"]  { top: 656px !important; left: 485px !important; }
+html.pf-phone #about .pf-ch[data-ch="dance1"] { top: 673px !important; left: 737px !important; }
+html.pf-phone #about .pf-ch[data-ch="dance2"] { top: 657px !important; left: 845px !important; }
 html.pf-phone #about .pf-exp { left: 440px !important; top: var(--pf-aexpt, 908px) !important; }
 html.pf-phone #about .pf-closing { left: 440px !important; top: var(--pf-aclt, 1708px) !important; align-items: center !important; }
 /* 휴대폰 경력·학력: 글자 2배 (컴퓨터 14/12/13px → 28/24/26px) */
@@ -55,6 +55,10 @@ html.pf-phone #about .pf-exp .pf-x:not(.pf-eh) { padding: 14px 0 !important; }
 .pf-cltxt .pf-gl.pf-lit { color: #cdf37d !important; text-shadow: 0 0 18px rgba(205,243,125,.55), 0 0 42px rgba(205,243,125,.25); }
 html.pf-light .pf-cltxt .pf-gl.pf-lit { text-shadow: none; }
 html.pf-phone #about .pf-closing > div:first-child { text-align: center !important; }
+
+/* 상세 페이지·팝업 오른쪽 위 X 버튼: 감독님 색(#ec4243) 바탕 + 흰 X (마우스를 올리면 조금 진하게) */
+html .pf-close, html .pf-mclose, html:not(.pf-light) .pf-modal .pf-mclose { background: #ec4243 !important; color: #ffffff !important; }
+html .pf-close:hover, html .pf-mclose:hover, html:not(.pf-light) .pf-modal .pf-mclose:hover { background: #d6373a !important; }
 
 /* 움직이는 그림 카드 오른쪽 위 GIF 표시 (Illustrations, CookieRun Character Animation) */
 .pf-gif { position: absolute; right: 12px; top: 12px; z-index: 2; height: 22px; padding: 0 9px; box-sizing: border-box; display: flex; align-items: center; border-radius: 999px; background: rgba(240,240,240,.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: #3a3a3a; font-family: 'GT America Mono', ui-monospace, Menlo, monospace; font-size: 10px; font-weight: 400; letter-spacing: .08em; line-height: 1; pointer-events: none; }

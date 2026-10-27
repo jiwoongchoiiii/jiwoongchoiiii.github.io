@@ -18,7 +18,13 @@
   var fixW = 0, fixH = 0;
   function zoom() {
     var w = window.innerWidth || 1440, h = window.innerHeight || 900;
-    if (isPhone) { if (w !== fixW || !fixH) { fixW = w; fixH = h; } h = fixH; }
+    if (isPhone) {
+      // 주소창·하단 막대가 다 보일 때의 높이(100svh)를 직접 잼 (아이폰은 처음 innerHeight가 실제 보이는 높이보다 크게 나올 수 있음)
+      var vp = document.getElementById('pf-vhp');
+      if (!vp && document.body) { vp = document.createElement('div'); vp.id = 'pf-vhp'; vp.setAttribute('aria-hidden', 'true'); vp.style.cssText = 'position:fixed;left:0;top:0;width:0;height:100vh;height:100svh;visibility:hidden;pointer-events:none'; document.body.appendChild(vp); }
+      var sv = vp && vp.offsetHeight; if (sv > 200) h = Math.min(h, sv);
+      if (w !== fixW || !fixH) { fixW = w; fixH = h; } h = fixH;
+    }
     window.__pfVH = h;                                          // Main이 화면 높이로 씀
     var s = Math.min(1, w / 1440), rootW = w / s;               // rootW: 사이트 전체 축소 뒤 화면 폭(디자인 단위, 1440 이상)
     var t = Math.max(0, Math.min(1, (h / w - 1.0) / 0.9));
@@ -36,8 +42,9 @@
     // 컴퓨터: 창 폭이 모니터 폭의 절반이 될 때까지는 위아래 글자·아이콘이 풀스크린 때 크기 그대로 (그보다 좁으면 비례해서 작아짐)
     var sw = Math.max(w, (window.screen && screen.width) || w), keep = Math.min(1, w / (sw / 2));
     var zfull = Math.max(1, sw / 1670);                        // 풀스크린일 때 홈·About 확대 배율
-    var tkd = zfull * keep / (s * zh), tkad = zfull * keep / (s * za);
-    var tk = mix(tkd, 1.5, t), tka = phone ? 1.05 : tkad;      // 휴대폰: 위아래 작은 글자는 예전의 3/4 크기
+    var tkd = zfull * keep / (s * zh);
+    var tk = mix(tkd, 1.5, t);                                 // 휴대폰: 위아래 작은 글자는 예전의 3/4 크기
+    var tka = tk * zh / za;                                    // About의 SEOUL·메일은 홈과 화면에서 같은 크기 (배율 차이 보정)
     var u = mix(Math.max(keep, 0.6), Math.min(0.9, w / 430), t) / s;
     window.__pfS = s; window.__pfMix = t; window.__pfZh = zh; window.__pfHw = hw; window.__pfWw = ww; window.__pfZa = za; window.__pfU = u; window.__pfTka = tka;
     d.classList.toggle('pf-phone', phone);
@@ -49,10 +56,11 @@
     set('--pf-rowl', Math.min(0, (ww - rowW) / 2).toFixed(2) + 'px'); set('--pf-roww', rowW.toFixed(2) + 'px');
     set('--pf-wpad', (wl + Math.max(0, (rowW - ww) / 2)).toFixed(2) + 'px');
     // 홈·About 위아래 작은 글자 크기(tk, tka)와 SEOUL·메일 위치 (메일은 SEOUL 바로 아래, 글자 크기에 맞춰)
-    var loct = mix(40, 156, t), aloct = phone ? 110 : 40;     // 휴대폰: 전구·EN/KR 아래 (실제 아이폰에서 겹치지 않는 높이)
+    var loct = mix(40, 156, t);                                // 휴대폰: 전구·EN/KR 아래 (실제 아이폰에서 겹치지 않는 높이)
+    var aloct = loct * zh / za;                                // About의 SEOUL·메일은 홈과 화면에서 같은 자리 (About 메뉴를 눌러도 그대로)
     set('--pf-tk', tk.toFixed(4)); set('--pf-tka', tka.toFixed(4));
     set('--pf-loct', loct.toFixed(1) + 'px'); set('--pf-mailt', (loct + 22 * tk).toFixed(1) + 'px');
-    set('--pf-aloct', aloct + 'px'); set('--pf-amailt', (aloct + 22 * tka).toFixed(1) + 'px');
+    set('--pf-aloct', aloct.toFixed(1) + 'px'); set('--pf-amailt', (aloct + 22 * tka).toFixed(1) + 'px');
     set('--pf-bulbr', mix(152, 128, t).toFixed(1) + 'px');
   }
   zoom();
@@ -88,7 +96,7 @@
 
   // 휴대폰 About(한 줄 배치): 첫 화면에는 요정과 그 아래 검은 여백까지만, EXPERIENCE는 첫 화면 바로 아래부터.
   // 경력 칸(휴대폰에서 글자 2배) 높이에 맞춰 클로징 문구 위치와 About 높이를 정함 (site.css의 --pf-aexpt, --pf-aclt, --pf-ah)
-  var abSet = '', abShift = 0;
+  var abSet = '';
   function alignAbout() {
     if (!d.classList.contains('pf-phone')) return;
     var ab = document.getElementById('about'); if (!ab || !ab.offsetHeight) return;
@@ -96,18 +104,6 @@
     var k = (window.__pfS || 1) * (window.__pfZa || 1);                   // 화면 px ÷ 디자인 px (사이트 배율 × About 배율)
     var first = (window.__pfVH || innerHeight) / k;                        // 첫 화면 높이(디자인 px)
     var expT = Math.round(Math.max(908, first + 40)), cloT = expT + exp.offsetHeight + 140, abH = cloT + 480;
-    // ABOUT ~ 요정 덩어리를 위 메일 주소와 아래 아이콘 사이 정중앙에 (홈의 JIWOONG CHOI처럼 무게중심이 화면 가운데)
-    var col = ab.querySelector('.pf-aboutcol'), mail = ab.querySelector('.pf-mail'), dock = document.querySelector('.pf-dock'), chs = ab.querySelectorAll('.pf-ch');
-    if (col && mail && dock && dock.offsetHeight && chs.length) {
-      // 화면 위치(getBoundingClientRect)는 아이폰에서 zoom 때문에 다르게 나올 수 있어, 배치 값과 배율 숫자로만 계산 (디자인 px)
-      var gT = col.offsetTop, gB = 0; Array.prototype.forEach.call(chs, function (c) { gB = Math.max(gB, c.offsetTop + c.offsetHeight); });   // 배치 값(춤 동작과 무관)
-      var mB = mail.offsetTop + mail.offsetHeight * (window.__pfTka || 1);                 // 메일 아래 끝 (scale은 위 기준)
-      var dockUp = ((parseFloat(dock.style.bottom) || 20) + dock.offsetHeight) * (window.__pfU || 1) * (window.__pfS || 1);   // 화면 맨 아래 ~ 아이콘 위 끝 (화면 px)
-      var dT = ((window.__pfVH || innerHeight) - dockUp) / k;
-      var sh = Math.round(abShift + ((mB + dT) / 2 - (gT + gB) / 2));
-      sh = Math.max(0, Math.min(sh, Math.round(first * 0.25), Math.round(first - 60 - (gB - abShift))));   // 0 ~ 첫 화면의 25%, 요정이 첫 화면 밖으로 나가지 않게 (값이 이상하게 나와도 크게 어긋나지 않도록)
-      if (Math.abs(sh - abShift) > 2) { abShift = sh; d.style.setProperty('--pf-ashift', sh + 'px'); }
-    }
     var key = expT + ',' + cloT + ',' + abH; if (key === abSet) return; abSet = key;
     d.style.setProperty('--pf-aexpt', expT + 'px'); d.style.setProperty('--pf-aclt', cloT + 'px'); d.style.setProperty('--pf-ah', abH + 'px');
   }
