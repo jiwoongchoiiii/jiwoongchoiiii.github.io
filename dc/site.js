@@ -98,10 +98,12 @@
     // ABOUT ~ 요정 덩어리를 위 메일 주소와 아래 아이콘 사이 정중앙에 (홈의 JIWOONG CHOI처럼 무게중심이 화면 가운데)
     var col = ab.querySelector('.pf-aboutcol'), mail = ab.querySelector('.pf-mail'), dock = document.querySelector('.pf-dock'), chs = ab.querySelectorAll('.pf-ch');
     if (col && mail && dock && dock.offsetHeight && chs.length) {
-      var abTop = ab.getBoundingClientRect().top + (window.scrollY || 0);
+      // 스크롤과 무관한 값만 씀: 메일은 About 맨 위 기준, 아이콘은 화면 맨 아래에서 떨어진 거리 (첫 화면 높이 기준)
       var gT = col.offsetTop, gB = 0; Array.prototype.forEach.call(chs, function (c) { gB = Math.max(gB, c.offsetTop + c.offsetHeight); });   // 배치 값(춤 동작과 무관)
-      var mB = (mail.getBoundingClientRect().bottom + (window.scrollY || 0) - abTop) / k, dT = (dock.getBoundingClientRect().top - abTop) / k;
+      var mB = (mail.getBoundingClientRect().bottom - ab.getBoundingClientRect().top) / k;
+      var dT = ((window.__pfVH || innerHeight) - (innerHeight - dock.getBoundingClientRect().top)) / k;
       var sh = Math.round(abShift + ((mB + dT) / 2 - (gT + gB) / 2));
+      sh = Math.max(0, Math.min(sh, Math.round(first - 60 - (gB - abShift))));   // 0 이상, 요정이 첫 화면 밖으로 나가지 않게
       if (Math.abs(sh - abShift) > 2) { abShift = sh; d.style.setProperty('--pf-ashift', sh + 'px'); }
     }
     var key = expT + ',' + cloT + ',' + abH; if (key === abSet) return; abSet = key;
