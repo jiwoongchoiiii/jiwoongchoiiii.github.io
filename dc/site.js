@@ -67,6 +67,22 @@
   }
   setInterval(alignSvc, 400); addEventListener('resize', function () { requestAnimationFrame(alignSvc); });
 
+  // 전구 효과음: 감독님이 준 "Light Switch - Sound Effect (4K).mp4" 안의 딸깍 소리 두 곳 (켤 때 2.81초, 끌 때 0.72초)
+  var snd = null, sndT = 0;
+  function bulbAudio() {
+    if (!snd) { try { snd = new Audio('assets/1ca167b6450a471f8d79828a910ab7a6.mp4'); snd.preload = 'auto'; snd.load(); } catch (e) { snd = null; } }
+    return snd;
+  }
+  window.__pfBulbSound = function (on) {
+    var a = bulbAudio(); if (!a) return;
+    try {
+      clearTimeout(sndT); a.currentTime = on ? 2.77 : 0.68; a.volume = on ? 0.10 : 0.12;   // 작게: 켤 때(화이트→블랙) 10%, 끌 때 12%
+      var p = a.play(); if (p && p.catch) p.catch(function () {});
+      sndT = setTimeout(function () { a.pause(); }, 380);   // 다음 소리 전까지만 재생
+    } catch (e) {}
+  };
+  addEventListener('load', function () { setTimeout(bulbAudio, 800); });   // 처음 누를 때 늦지 않게 미리 받아 둠
+
   // 우클릭 막기 (이미지 저장 방지)
   addEventListener('contextmenu', function (e) { e.preventDefault(); e.stopPropagation(); }, true);
   // 이미지·영상을 끌어서 저장하는 것도 막기

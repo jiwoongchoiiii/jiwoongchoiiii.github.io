@@ -405,7 +405,7 @@ class Component extends DCLogic {
         let sH = Math.max(300, H - sTop - 104), sW = Math.round(sH * 4 / 3); if (sW > 1200) { sW = 1200; sH = 900; }
         return { homeH: HH, hTop, rTop, locTop, mailTop: locTop + 22, svcTop, fanTop, sTop, sH, sW, sK: +(sW / 1024).toFixed(4), sLeft: Math.round((1440 - sW) / 2), worksH: Math.max(H, content + T0 + B0), fhTop, r1Top, r1H, chTop, r2Top, r2H, fH, fW, cS, fArrow: 24 + Math.round(fH / 2) - 22, cArrow: 24 + Math.round(cS / 2) - 22 };
       })(),
-      toggleTheme: () => { const l = !document.documentElement.classList.contains('pf-light'); document.documentElement.classList.toggle('pf-light', l); try { localStorage.setItem('pf-theme', l ? 'light' : 'dark'); } catch (e) {} },
+      toggleTheme: () => { const l = !document.documentElement.classList.contains('pf-light'); document.documentElement.classList.toggle('pf-light', l); if (window.__pfBulbSound) window.__pfBulbSound(!l); try { localStorage.setItem('pf-theme', l ? 'light' : 'dark'); } catch (e) {} },
       goHome: (e) => this.showPage('main', 'home', e), goAbout: (e) => this.showPage('about', 'top', e), goClient: (e) => this.showPage('main', 'works', e),
       pgDur: this.state.pgFade ? '.11s' : '.16s', aboutMounted: !!this.state.aboutMounted, mvOp: (this.state.pg || 'main') === 'main' && !this.state.pgFade ? 1 : 0, mvH: (this.state.pg || 'main') === 'main' ? 'auto' : '0px', mvOv: (this.state.pg || 'main') === 'main' ? 'visible' : 'hidden', mvVis: (this.state.pg || 'main') === 'main' ? 'visible' : 'hidden',
       avOp: this.state.pg === 'about' && !this.state.pgFade ? 1 : 0, avH: this.state.pg === 'about' ? 'auto' : '0px', avOv: this.state.pg === 'about' ? 'visible' : 'hidden', avVis: this.state.pg === 'about' ? 'visible' : 'hidden',
