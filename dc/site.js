@@ -87,7 +87,7 @@
 
   // 휴대폰 About(한 줄 배치): 첫 화면에는 요정과 그 아래 검은 여백까지만, EXPERIENCE는 첫 화면 바로 아래부터.
   // 경력 칸(휴대폰에서 글자 2배) 높이에 맞춰 클로징 문구 위치와 About 높이를 정함 (site.css의 --pf-aexpt, --pf-aclt, --pf-ah)
-  var abSet = '';
+  var abSet = '', abShift = 0;
   function alignAbout() {
     if (!d.classList.contains('pf-phone')) return;
     var ab = document.getElementById('about'); if (!ab || !ab.offsetHeight) return;
@@ -95,6 +95,15 @@
     var k = ab.getBoundingClientRect().width / ab.offsetWidth || 1;      // 화면 px ÷ 디자인 px
     var first = (window.__pfVH || innerHeight) / k;                        // 첫 화면 높이(디자인 px)
     var expT = Math.round(Math.max(908, first + 40)), cloT = expT + exp.offsetHeight + 140, abH = cloT + 480;
+    // ABOUT ~ 요정 덩어리를 위 메일 주소와 아래 아이콘 사이 정중앙에 (홈의 JIWOONG CHOI처럼 무게중심이 화면 가운데)
+    var col = ab.querySelector('.pf-aboutcol'), mail = ab.querySelector('.pf-mail'), dock = document.querySelector('.pf-dock'), chs = ab.querySelectorAll('.pf-ch');
+    if (col && mail && dock && dock.offsetHeight && chs.length) {
+      var abTop = ab.getBoundingClientRect().top + (window.scrollY || 0);
+      var gT = col.offsetTop, gB = 0; Array.prototype.forEach.call(chs, function (c) { gB = Math.max(gB, c.offsetTop + c.offsetHeight); });   // 배치 값(춤 동작과 무관)
+      var mB = (mail.getBoundingClientRect().bottom + (window.scrollY || 0) - abTop) / k, dT = (dock.getBoundingClientRect().top - abTop) / k;
+      var sh = Math.round(abShift + ((mB + dT) / 2 - (gT + gB) / 2));
+      if (Math.abs(sh - abShift) > 2) { abShift = sh; d.style.setProperty('--pf-ashift', sh + 'px'); }
+    }
     var key = expT + ',' + cloT + ',' + abH; if (key === abSet) return; abSet = key;
     d.style.setProperty('--pf-aexpt', expT + 'px'); d.style.setProperty('--pf-aclt', cloT + 'px'); d.style.setProperty('--pf-ah', abH + 'px');
   }
