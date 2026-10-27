@@ -19,7 +19,10 @@
     var t = Math.max(0, Math.min(1, (h / w - 1.0) / 0.9));
     var zd = s === 1 ? Math.max(1, w / 1670) : 1;              // 컴퓨터 배치의 홈·About 확대
     var hw = mix(rootW / zd, HW, t), zh = rootW / hw;          // 홈: 화면에 보이는 디자인 폭
-    var phone = t >= 0.4, za = phone ? rootW / AW : zd;        // About
+    // About: 창이 좁아져도 확 작아지지 않게, 양옆 내용(디자인 1440 중 가운데 1300px)이 화면을 채울 때까지 키움 (최대 1440/1300배).
+    //        큰 화면의 확대(zd)와 이어지도록 둘 중 큰 값 (창 폭 1850px에서 두 값이 같아짐)
+    var zaw = Math.max(zd, Math.min(rootW / 1300, 1440 / 1300));
+    var phone = t >= 0.4, za = phone ? rootW / AW : zaw;       // About
     var ww = mix(1440, WW, t), zw = 1440 / ww;                 // Works: 디자인 폭
     var rowW = Math.max(ww, rootW / zw), wl = mix(120, 16, t);  // Works 가로 선반: 화면 끝까지, 첫 박스는 왼쪽 여백 wl부터
     // 컴퓨터: 창 폭이 모니터 폭의 절반이 될 때까지는 위아래 글자·아이콘이 풀스크린 때 크기 그대로 (그보다 좁으면 비례해서 작아짐)
