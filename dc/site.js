@@ -38,7 +38,7 @@
     var tkd = zfull * keep / (s * zh), tkad = zfull * keep / (s * za);
     var tk = mix(tkd, 1.5, t), tka = phone ? 1.05 : tkad;      // 휴대폰: 위아래 작은 글자는 예전의 3/4 크기
     var u = mix(Math.max(keep, 0.6), Math.min(0.9, w / 430), t) / s;
-    window.__pfS = s; window.__pfMix = t; window.__pfZh = zh; window.__pfHw = hw; window.__pfWw = ww;
+    window.__pfS = s; window.__pfMix = t; window.__pfZh = zh; window.__pfHw = hw; window.__pfWw = ww; window.__pfZa = za; window.__pfU = u; window.__pfTka = tka;
     d.classList.toggle('pf-phone', phone);
     var set = function (k, v) { d.style.setProperty(k, v); };
     set('--pf-s', s.toFixed(5)); set('--pf-u', u.toFixed(5));
@@ -92,18 +92,19 @@
     if (!d.classList.contains('pf-phone')) return;
     var ab = document.getElementById('about'); if (!ab || !ab.offsetHeight) return;
     var exp = ab.querySelector('.pf-exp'), clo = ab.querySelector('.pf-closing'); if (!exp || !clo) return;
-    var k = ab.getBoundingClientRect().width / ab.offsetWidth || 1;      // 화면 px ÷ 디자인 px
+    var k = (window.__pfS || 1) * (window.__pfZa || 1);                   // 화면 px ÷ 디자인 px (사이트 배율 × About 배율)
     var first = (window.__pfVH || innerHeight) / k;                        // 첫 화면 높이(디자인 px)
     var expT = Math.round(Math.max(908, first + 40)), cloT = expT + exp.offsetHeight + 140, abH = cloT + 480;
     // ABOUT ~ 요정 덩어리를 위 메일 주소와 아래 아이콘 사이 정중앙에 (홈의 JIWOONG CHOI처럼 무게중심이 화면 가운데)
     var col = ab.querySelector('.pf-aboutcol'), mail = ab.querySelector('.pf-mail'), dock = document.querySelector('.pf-dock'), chs = ab.querySelectorAll('.pf-ch');
     if (col && mail && dock && dock.offsetHeight && chs.length) {
-      // 스크롤과 무관한 값만 씀: 메일은 About 맨 위 기준, 아이콘은 화면 맨 아래에서 떨어진 거리 (첫 화면 높이 기준)
+      // 화면 위치(getBoundingClientRect)는 아이폰에서 zoom 때문에 다르게 나올 수 있어, 배치 값과 배율 숫자로만 계산 (디자인 px)
       var gT = col.offsetTop, gB = 0; Array.prototype.forEach.call(chs, function (c) { gB = Math.max(gB, c.offsetTop + c.offsetHeight); });   // 배치 값(춤 동작과 무관)
-      var mB = (mail.getBoundingClientRect().bottom - ab.getBoundingClientRect().top) / k;
-      var dT = ((window.__pfVH || innerHeight) - (innerHeight - dock.getBoundingClientRect().top)) / k;
+      var mB = mail.offsetTop + mail.offsetHeight * (window.__pfTka || 1);                 // 메일 아래 끝 (scale은 위 기준)
+      var dockUp = ((parseFloat(dock.style.bottom) || 20) + dock.offsetHeight) * (window.__pfU || 1) * (window.__pfS || 1);   // 화면 맨 아래 ~ 아이콘 위 끝 (화면 px)
+      var dT = ((window.__pfVH || innerHeight) - dockUp) / k;
       var sh = Math.round(abShift + ((mB + dT) / 2 - (gT + gB) / 2));
-      sh = Math.max(0, Math.min(sh, Math.round(first - 60 - (gB - abShift))));   // 0 이상, 요정이 첫 화면 밖으로 나가지 않게
+      sh = Math.max(0, Math.min(sh, 150, Math.round(first - 60 - (gB - abShift))));   // 0~150, 요정이 첫 화면 밖으로 나가지 않게 (기기마다 값이 이상하게 나와도 크게 어긋나지 않도록)
       if (Math.abs(sh - abShift) > 2) { abShift = sh; d.style.setProperty('--pf-ashift', sh + 'px'); }
     }
     var key = expT + ',' + cloT + ',' + abH; if (key === abSet) return; abSet = key;
