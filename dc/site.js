@@ -23,7 +23,8 @@
     var s = Math.min(1, w / 1440), rootW = w / s;               // rootW: 사이트 전체 축소 뒤 화면 폭(디자인 단위, 1440 이상)
     var t = Math.max(0, Math.min(1, (h / w - 1.0) / 0.9));
     // 휴대폰 세로: 주소창·하단 막대 때문에 보이는 높이가 줄어도 휴대폰 배치(T=1)로 (화면 자체의 비율로 판단)
-    if (isPhone && h > w) t = Math.max(t, Math.min(1, (Math.max(screen.width, screen.height) / Math.min(screen.width, screen.height) - 1.0) / 0.9));
+    // 세로로 든 휴대폰은 화면이 짧은 기기(아이폰 SE 등)도 항상 휴대폰 배치
+    if (isPhone && h > w) t = 1;
     var zd = s === 1 ? Math.max(1, w / 1670) : 1;              // 컴퓨터 배치의 홈·About 확대
     var hw = mix(rootW / zd, HW, t), zh = rootW / hw;          // 홈: 화면에 보이는 디자인 폭
     // About: 창이 좁아져도 확 작아지지 않게, 양옆 내용(디자인 1440 중 가운데 1300px)이 화면을 채울 때까지 키움 (최대 1440/1300배).
@@ -104,7 +105,7 @@
       var dockUp = ((parseFloat(dock.style.bottom) || 20) + dock.offsetHeight) * (window.__pfU || 1) * (window.__pfS || 1);   // 화면 맨 아래 ~ 아이콘 위 끝 (화면 px)
       var dT = ((window.__pfVH || innerHeight) - dockUp) / k;
       var sh = Math.round(abShift + ((mB + dT) / 2 - (gT + gB) / 2));
-      sh = Math.max(0, Math.min(sh, 150, Math.round(first - 60 - (gB - abShift))));   // 0~150, 요정이 첫 화면 밖으로 나가지 않게 (기기마다 값이 이상하게 나와도 크게 어긋나지 않도록)
+      sh = Math.max(0, Math.min(sh, Math.round(first * 0.25), Math.round(first - 60 - (gB - abShift))));   // 0 ~ 첫 화면의 25%, 요정이 첫 화면 밖으로 나가지 않게 (값이 이상하게 나와도 크게 어긋나지 않도록)
       if (Math.abs(sh - abShift) > 2) { abShift = sh; d.style.setProperty('--pf-ashift', sh + 'px'); }
     }
     var key = expT + ',' + cloT + ',' + abH; if (key === abSet) return; abSet = key;
