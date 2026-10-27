@@ -64,7 +64,18 @@
     if (dock && dock.offsetHeight) want = Math.min(want, dock.getBoundingClientRect().top - 12 - s.height);   // 맨 위에서 볼 때 하단 아이콘 위
     var dy = svcDy + (want - (s.top + y)) / k;
     if (Math.abs(dy - svcDy) > 0.5) { svcDy = dy; d.style.setProperty('--pf-svcdy', dy.toFixed(1) + 'px'); }
+    // 글꼴이 다 들어오고 제자리를 잡은 뒤에 부드럽게 보이게 (기본 글꼴 → Archivo로 바뀌며 글자 폭이 움찔하는 것을 숨김)
+    if (!svcShown && (svcFont() || Date.now() - svcT0 > 3000)) { svcShown = true; d.style.setProperty('--pf-svcop', '1'); }   // 글꼴이 늦어도 3초 뒤에는 보임
   }
+  var svcShown = false, svcT0 = Date.now();
+  function svcFont() {   // 하단 문구 글꼴(Archivo 400)이 실제로 들어왔는지
+    if (!document.fonts || !document.fonts.forEach) return true;
+    var ok = false; document.fonts.forEach(function (f) { if (!ok && f.family.replace(/["']/g, '') === 'Archivo' && f.status === 'loaded' && /^(400|normal)$/.test(String(f.weight))) ok = true; });
+    return ok;
+  }
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function () { requestAnimationFrame(alignSvc); });
+  // 처음 3초는 매 화면마다 맞춤 (새로고침 직후 글꼴·배치가 자리 잡는 동안 문구가 뚝뚝 움직이지 않게), 그 뒤로는 0.4초마다
+  (function early() { alignSvc(); if (Date.now() - svcT0 < 3000) requestAnimationFrame(early); })();
   setInterval(alignSvc, 400); addEventListener('resize', function () { requestAnimationFrame(alignSvc); });
 
   // 전구 효과음: 감독님이 준 "Light Switch - Sound Effect (4K).mp4" 안의 딸깍 소리 두 곳 (켤 때 2.81초, 끌 때 0.72초)
