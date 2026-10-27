@@ -13,10 +13,17 @@
   //  --pf-u : 전구·EN/KR·하단 아이콘 배율 (작은 화면에서도 누르기 좋은 크기 유지)
   var HW = 967, AW = 640, WW = 650;
   function mix(a, b, t) { return a + (b - a) * t; }
+  // 휴대폰(터치 + 작은 화면): 주소창이 줄었다 늘었다 하며 높이가 바뀌어도 배치가 출렁이지 않게, 높이는 처음(또는 회전했을 때) 값으로 고정
+  var isPhone = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches && window.screen && Math.min(screen.width, screen.height) <= 600);
+  var fixW = 0, fixH = 0;
   function zoom() {
     var w = window.innerWidth || 1440, h = window.innerHeight || 900;
+    if (isPhone) { if (w !== fixW || !fixH) { fixW = w; fixH = h; } h = fixH; }
+    window.__pfVH = h;                                          // Main이 화면 높이로 씀
     var s = Math.min(1, w / 1440), rootW = w / s;               // rootW: 사이트 전체 축소 뒤 화면 폭(디자인 단위, 1440 이상)
     var t = Math.max(0, Math.min(1, (h / w - 1.0) / 0.9));
+    // 휴대폰 세로: 주소창·하단 막대 때문에 보이는 높이가 줄어도 휴대폰 배치(T=1)로 (화면 자체의 비율로 판단)
+    if (isPhone && h > w) t = Math.max(t, Math.min(1, (Math.max(screen.width, screen.height) / Math.min(screen.width, screen.height) - 1.0) / 0.9));
     var zd = s === 1 ? Math.max(1, w / 1670) : 1;              // 컴퓨터 배치의 홈·About 확대
     var hw = mix(rootW / zd, HW, t), zh = rootW / hw;          // 홈: 화면에 보이는 디자인 폭
     // About: 창이 좁아져도 확 작아지지 않게, 양옆 내용(디자인 1440 중 가운데 1300px)이 화면을 채울 때까지 키움 (최대 1440/1300배).
@@ -41,7 +48,7 @@
     set('--pf-rowl', Math.min(0, (ww - rowW) / 2).toFixed(2) + 'px'); set('--pf-roww', rowW.toFixed(2) + 'px');
     set('--pf-wpad', (wl + Math.max(0, (rowW - ww) / 2)).toFixed(2) + 'px');
     // 홈·About 위아래 작은 글자 크기(tk, tka)와 SEOUL·메일 위치 (메일은 SEOUL 바로 아래, 글자 크기에 맞춰)
-    var loct = mix(40, 122, t), aloct = phone ? 82 : 40;      // 휴대폰: 전구에 닿지 않을 만큼만 위로
+    var loct = mix(40, 156, t), aloct = phone ? 110 : 40;     // 휴대폰: 전구·EN/KR 아래 (실제 아이폰에서 겹치지 않는 높이)
     set('--pf-tk', tk.toFixed(4)); set('--pf-tka', tka.toFixed(4));
     set('--pf-loct', loct.toFixed(1) + 'px'); set('--pf-mailt', (loct + 22 * tk).toFixed(1) + 'px');
     set('--pf-aloct', aloct + 'px'); set('--pf-amailt', (aloct + 22 * tka).toFixed(1) + 'px');
@@ -77,6 +84,28 @@
   // 처음 3초는 매 화면마다 맞춤 (새로고침 직후 글꼴·배치가 자리 잡는 동안 문구가 뚝뚝 움직이지 않게), 그 뒤로는 0.4초마다
   (function early() { alignSvc(); if (Date.now() - svcT0 < 3000) requestAnimationFrame(early); })();
   setInterval(alignSvc, 400); addEventListener('resize', function () { requestAnimationFrame(alignSvc); });
+
+  // 휴대폰 About(한 줄 배치): 첫 화면에는 요정과 그 아래 검은 여백까지만, EXPERIENCE는 첫 화면 바로 아래부터.
+  // 경력 칸(휴대폰에서 글자 2배) 높이에 맞춰 클로징 문구 위치와 About 높이를 정함 (site.css의 --pf-aexpt, --pf-aclt, --pf-ah)
+  var abSet = '';
+  function alignAbout() {
+    if (!d.classList.contains('pf-phone')) return;
+    var ab = document.getElementById('about'); if (!ab || !ab.offsetHeight) return;
+    var exp = ab.querySelector('.pf-exp'), clo = ab.querySelector('.pf-closing'); if (!exp || !clo) return;
+    var k = ab.getBoundingClientRect().width / ab.offsetWidth || 1;      // 화면 px ÷ 디자인 px
+    var first = (window.__pfVH || innerHeight) / k;                        // 첫 화면 높이(디자인 px)
+    var expT = Math.round(Math.max(908, first + 40)), cloT = expT + exp.offsetHeight + 140, abH = cloT + 480;
+    var key = expT + ',' + cloT + ',' + abH; if (key === abSet) return; abSet = key;
+    d.style.setProperty('--pf-aexpt', expT + 'px'); d.style.setProperty('--pf-aclt', cloT + 'px'); d.style.setProperty('--pf-ah', abH + 'px');
+  }
+  setInterval(alignAbout, 400); addEventListener('resize', function () { requestAnimationFrame(alignAbout); });
+
+  // 휴대폰(마우스 없음): 클로징 문구 "Let's make / something / memorable!"을 터치하면 그 줄만 연두빛으로 계속 빛남
+  addEventListener('click', function (e) {
+    if (!(window.matchMedia && matchMedia('(hover: none)').matches)) return;
+    var g = e.target && e.target.closest ? e.target.closest('.pf-cltxt .pf-gl') : null; if (!g) return;
+    Array.prototype.forEach.call(g.parentNode.querySelectorAll('.pf-gl'), function (x) { x.classList.toggle('pf-lit', x === g); });
+  }, true);
 
   // 전구 효과음: 감독님이 준 "Light Switch - Sound Effect (4K).mp4" 안의 딸깍 소리 두 곳 (켤 때 2.81초, 끌 때 0.72초)
   var snd = null, sndT = 0;

@@ -199,7 +199,7 @@ class Component extends DCLogic {
     this._preAbout = setTimeout(() => { if (!this.state.aboutMounted) this.setState({ aboutMounted: true }); }, 1200);
     setTimeout(() => this.setupReveal(), 60);
     // 화면 높이를 디자인 기준 크기로 (좁은 화면에서 사이트 전체가 --pf-s 배율로 축소되므로 나눠 줌)
-    this._vh = () => this.setState({ vh: Math.round((window.innerHeight || 0) / (window.__pfS || 1)) });
+    this._vh = () => this.setState({ vh: Math.round((window.__pfVH || window.innerHeight || 0) / (window.__pfS || 1)) });   // __pfVH: 휴대폰은 처음 높이로 고정 (site.js)
     this._vh(); window.addEventListener('resize', this._vh);
     const DETAILS = ['CookieRun', 'Snowman', 'ThreePigs', 'Illustrations', 'Lullaby', 'Achim', 'AchimPlaylist', 'Jelly', 'Museum', 'Kakao'];
     this._esc = (e) => {
@@ -398,8 +398,8 @@ class Component extends DCLogic {
         // 홈 (spencergabor.work 참고): 위 SEOUL, KOREA / 가운데 이름 → 썸네일 4개 → ILLUSTRATOR(흐린 큰 글자) / 아래 분야 나열
         // 큰 화면에서 홈은 Z배로 확대되므로(site.css) 화면 높이를 Z로 나눈 크기 안에 배치 → 확대 후 화면에 꼭 맞음
         // 휴대폰 홈은 화면 전체 높이 대신 폭의 1.22배 높이로 (위아래 여백이 과하게 벌어지지 않게)
-        // 홈 높이: 컴퓨터는 화면 높이, 휴대폰은 화면 폭의 1.22배 (위아래 여백이 과하게 벌어지지 않게)
-        const Z = window.__pfZh || 1, hw = window.__pfHw || 1440; let HH = Math.round(mix((this.state.vh || 0) / Z, hw * 1.22)); if (HH < 400) HH = 1000;
+        // 홈 높이: 모든 기기에서 화면 한 장 (휴대폰도 첫 화면에 홈 요소만 보이게, 2026-10-28)
+        const Z = window.__pfZh || 1, hw = window.__pfHw || 1440; let HH = Math.round((this.state.vh || 0) / Z); if (HH < 400) HH = 1000;
         const blockH = 106 + 6 + 240 + 6 + 106, hTop = Math.max(70, Math.round((HH - blockH) / 2) - 14), fanTop = hTop + 112, rTop = fanTop + 246, locTop = 40, svcTop = HH - 128;
         const sTop = 390; // 캐릭터 무대 위치는 이전 그대로 (캐릭터 배치 유지)
         let sH = Math.max(300, H - sTop - 104), sW = Math.round(sH * 4 / 3); if (sW > 1200) { sW = 1200; sH = 900; }
